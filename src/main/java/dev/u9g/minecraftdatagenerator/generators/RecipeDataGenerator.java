@@ -10,6 +10,7 @@ import dev.u9g.minecraftdatagenerator.util.DGU;
 import net.minecraft.item.Item;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.ShapedRecipe;
 import net.minecraft.recipe.ShapelessRecipe;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -31,7 +32,8 @@ public class RecipeDataGenerator implements IDataGenerator {
         DynamicRegistryManager registryManager = DGU.getWorld().getRegistryManager();
         JsonObject finalObj = new JsonObject();
         Multimap<Integer, JsonObject> recipes = ArrayListMultimap.create();
-        for (Recipe<?> recipe : Objects.requireNonNull(DGU.getWorld()).getRecipeManager().values()) {
+        for (RecipeEntry<?> recipeEntry : Objects.requireNonNull(DGU.getWorld()).getRecipeManager().values()) {
+            Recipe<?> recipe = recipeEntry.value();
             if (recipe instanceof ShapedRecipe sr) {
                 var ingredients = sr.getIngredients();
                 List<Integer> ingr = new ArrayList<>();
@@ -69,11 +71,11 @@ public class RecipeDataGenerator implements IDataGenerator {
                 finalRecipe.add("inShape", inShape);
 
                 var resultObject = new JsonObject();
-                resultObject.addProperty("id", getRawIdFor(sr.getOutput(registryManager).getItem()));
-                resultObject.addProperty("count", sr.getOutput(registryManager).getCount());
+                resultObject.addProperty("id", getRawIdFor(sr.getResult(registryManager).getItem()));
+                resultObject.addProperty("count", sr.getResult(registryManager).getCount());
                 finalRecipe.add("result", resultObject);
 
-                String id = ((Integer) getRawIdFor(sr.getOutput(registryManager).getItem())).toString();
+                String id = ((Integer) getRawIdFor(sr.getResult(registryManager).getItem())).toString();
 
                 if (!finalObj.has(id)) {
                     finalObj.add(id, new JsonArray());
@@ -113,10 +115,10 @@ public class RecipeDataGenerator implements IDataGenerator {
                 var rootRecipeObject = new JsonObject();
                 rootRecipeObject.add("ingredients", ingredients);
                 var resultObject = new JsonObject();
-                resultObject.addProperty("id", getRawIdFor(sl.getOutput(registryManager).getItem()));
-                resultObject.addProperty("count", sl.getOutput(registryManager).getCount());
+                resultObject.addProperty("id", getRawIdFor(sl.getResult(registryManager).getItem()));
+                resultObject.addProperty("count", sl.getResult(registryManager).getCount());
                 rootRecipeObject.add("result", resultObject);
-                recipes.put(getRawIdFor(sl.getOutput(registryManager).getItem()), rootRecipeObject);
+                recipes.put(getRawIdFor(sl.getResult(registryManager).getItem()), rootRecipeObject);
             }
         }
         recipes.forEach((a, b) -> {
